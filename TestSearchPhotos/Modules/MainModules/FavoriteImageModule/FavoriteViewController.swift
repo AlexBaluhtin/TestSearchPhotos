@@ -8,74 +8,76 @@
 import UIKit
 
 protocol FavoriteViewControllerLogic: AnyObject {
-    func setupTableView()
+  func setupTableView()
 }
 
 class FavoriteViewController: UITableViewController {
+  
+  var presenter: PresenterFavoriteImages!
+  private var arrayFavoriteImages: [DetailImageModel] = []
+  
+  override func viewDidLoad() {
+    super.viewDidLoad()
+    view.backgroundColor = .white
+    setupNavigationBar()
+  }
+  
+  override func viewWillAppear(_ animated: Bool) {
+    super.viewWillAppear(animated)
+    setupTableView()
+    presenter.showFavoritePhotos()
+  }
+  
+  private func setupNavigationBar() {
+    title = "Favorite"
+    navigationController?.navigationBar.prefersLargeTitles = true
+    navigationItem.largeTitleDisplayMode = .always
+  }
+  
+  override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    arrayFavoriteImages.count
+  }
+  
+  override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+    let cell = tableView.dequeueReusableCell(withIdentifier: FavoriteImageTableViewCell.cellIdentifier,
+                                             for: indexPath) as? FavoriteImageTableViewCell
     
-    private var presenter = PresenterFavoriteImages()
-    private var arrayFavoriteImages: [Response.ViewModelImage] = []
+    guard let cell = cell else { return UITableViewCell() }
     
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        view.backgroundColor = .white
-        setupNavigationBar()
-    }
-    
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        
-        presenter.setViewDelegate(delegate: self)
-        presenter.showFavoritePhotos()
-        setupTableView()
-    }
-    
-    private func setupNavigationBar() {
-        title = "Favorite"
-        navigationController?.navigationBar.prefersLargeTitles = true
-        navigationItem.largeTitleDisplayMode = .always
-    }
-    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-         arrayFavoriteImages.count
-    }
-    
-    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: FavoriteImageTableViewCell.cellIdentifier,
-                                                 for: indexPath) as! FavoriteImageTableViewCell
-        let viewModel = arrayFavoriteImages[indexPath.row]
-        cell.configure(data: viewModel)
-        return cell
-    }
-    
-    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-         52
-    }
-    
-    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let info = InfoImageViewController()
-        info.viewModelImage = arrayFavoriteImages[indexPath.row]
-        navigationController?.pushViewController(info, animated: true)
-    }
+    let image = arrayFavoriteImages[indexPath.row]
+    cell.configure(image)
+    return cell
+  }
+  
+  override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+    52
+  }
+  
+  override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+    let image = arrayFavoriteImages[indexPath.row]
+    let infoImage = ModulBuilder.createInfoImage(image: image)
+    navigationController?.pushViewController(infoImage, animated: true)
+  }
 }
 
 extension FavoriteViewController: FavoriteViewControllerLogic {
-    
-    func setupTableView() {
-        tableView.separatorStyle = .none
-        tableView.register(FavoriteImageTableViewCell.self, forCellReuseIdentifier: FavoriteImageTableViewCell.cellIdentifier)
-        tableView.keyboardDismissMode = .onDrag
-        tableView.showsVerticalScrollIndicator = false
-        tableView.contentInset = .init(top: 8, left: 0, bottom: -8, right: 0)
-    }
+  
+  func setupTableView() {
+    tableView.separatorStyle = .none
+    tableView.register(FavoriteImageTableViewCell.self,
+                       forCellReuseIdentifier: FavoriteImageTableViewCell.cellIdentifier)
+    tableView.keyboardDismissMode = .onDrag
+    tableView.showsVerticalScrollIndicator = false
+    tableView.contentInset = .init(top: 8, left: 0, bottom: -8, right: 0)
+  }
 }
 
-extension FavoriteViewController: PresenterFavoriteImagesDelegate {
-    func presenterFavoriteImages(images: [Response.ViewModelImage]) {
-        self.arrayFavoriteImages = images
-        tableView.reloadData()
+extension FavoriteViewController: FavoriteImageProtocol {
+  func presentImage(images: [DetailImageModel]) {
+    DispatchQueue.main.async {
+      self.arrayFavoriteImages = images
+      self.tableView.reloadData()
     }
     
-    func presenterSplashError(error: Error) {
-        
-    }
+  }
 }

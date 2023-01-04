@@ -13,8 +13,8 @@ final class MoyaRestClient<Target: TargetType>: RestClient {
     private var provider = MoyaProvider<Target>(plugins: [NetworkLoggerPlugin()])
     
     func sendRequest<T: Decodable>(to endpoint: Target,
-                                   success: @escaping (T) -> (),
-                                   failure: @escaping (NetworkError) -> ()) {
+                                   success: @escaping (T) -> Void,
+                                   failure: @escaping (NetworkError) -> Void) {
         provider.request(endpoint) { result in
             switch result {
             case .success(let response):

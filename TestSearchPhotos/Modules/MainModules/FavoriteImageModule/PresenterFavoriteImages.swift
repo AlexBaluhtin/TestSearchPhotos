@@ -6,47 +6,48 @@
 //
 
 import Foundation
+import RealmSwift
 
-protocol PresenterFavoriteImagesDelegate: AnyObject {
-    func presenterFavoriteImages(images: [Response.ViewModelImage])
-    func presenterSplashError(error: Error)
+protocol FavoriteImageProtocol: AnyObject {
+  func presentImage(images: [DetailImageModel])
 }
 
-class PresenterFavoriteImages {
+protocol PresenterFavoriteImagesProtocol: AnyObject {
+  func loadDataArray(completion: @escaping ([DetailImageModel]) -> Void)
+  
+  init(view: FavoriteImageProtocol)
+}
+
+class PresenterFavoriteImages: PresenterFavoriteImagesProtocol {
+  
+  private let realm = try? Realm()
+  
+  weak var view: FavoriteImageProtocol?
+  
+  required init(view: FavoriteImageProtocol) {
+    self.view = view
+  }
+  
+  func loadDataArray(completion: @escaping ([DetailImageModel]) -> Void) {
+    let array = realm?.objects(RMDetailImageModel.self)
+    var newArray: [DetailImageModel] = []
+    array?.forEach({
+      let image = DetailImageModel(id: $0.id,
+                                   userName: $0.userName,
+                                   location: $0.location,
+                                   image: $0.image,
+                                   createdImage: $0.createdImage,
+                                   downloadsCount: $0.downloadsCount,
+                                   isFavorite: $0.isFavorite)
+      newArray.append(image)
+    })
     
-    weak private var delegate: PresenterFavoriteImagesDelegate?
-    
-    private var unarchiver = NSKeyedUnarchiver.self
-    
-    func loadDataArray(completion: @escaping (Result<[Response.ViewModelImage], Error>) -> ()) {
-         guard
-             let objects = UserDefaults.standard.data(forKey: "FavoriteImagesArray")
-         else {
-             return
-         }
-         do {
-             let archiveObject = try unarchiver.unarchiveTopLevelObjectWithData(objects) as? [Response.ViewModelImage]
-             guard let array = archiveObject  else {
-                 fatalError("loadDataArray - Can't get Array")
-             }
-             completion(.success(array))
-         } catch {
-             fatalError("loadDataArray - Can't encode data: \(error)")
-         }
-     }
-    
-    public func setViewDelegate(delegate: PresenterFavoriteImagesDelegate) {
-        self.delegate = delegate
+    completion(newArray)
+  }
+  
+  func showFavoritePhotos() {
+    loadDataArray { result in
+      self.view?.presentImage(images: result)
     }
-    
-    func showFavoritePhotos() {
-        loadDataArray { result in
-            switch result {
-            case .success(let success):
-                self.delegate?.presenterFavoriteImages(images: success)
-            case .failure(let error):
-                self.delegate?.presenterSplashError(error: error)
-            }
-        }
-   }
+  }
 }

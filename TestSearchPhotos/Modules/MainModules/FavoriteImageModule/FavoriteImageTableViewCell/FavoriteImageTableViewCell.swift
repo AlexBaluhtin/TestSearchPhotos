@@ -37,12 +37,13 @@ class FavoriteImageTableViewCell: UITableViewCell {
         backgroundColor = .white
     }
     
-    func configure(data viewModel: Response.ViewModelImage) {
-        guard let url = URL(string: viewModel.image) else { return }
+    func configure(_ image: DetailImageModel) {
+        guard let url = URL(string: image.image ?? "") else { return }
+        
         UIView.animate(withDuration: 0.2) { [weak self] in
             self?.imagePhoto.sd_setImage(with: url, completed: nil)
         }
-        userNameLabel.text = viewModel.userName
+        userNameLabel.text = image.userName
     }
     
     private func setup() {

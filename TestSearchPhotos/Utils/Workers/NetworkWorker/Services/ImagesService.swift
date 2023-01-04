@@ -9,17 +9,17 @@ import Foundation
 
 protocol ImagesServiceProtocol: AnyObject {
     
-    func getImages(completion: @escaping (Result<[Response.RandomImageModel.ImageModelElement], Error>) -> ())
+    func getImages(completion: @escaping (Result<[RandomImageModel.ImageModelElement], Error>) -> Void)
     func searchResult(query: String,
                       page: String,
-                      completion: @escaping (Result<Response.SearchImageModel.SearchResults, Error>) -> ())
+                      completion: @escaping (Result<SearchImageModel.SearchResults, Error>) -> Void)
 }
 
 final class ImagesService: ImagesServiceProtocol {
     
     private var apiClient = MoyaRestClient<ImagesTarget>()
     
-    func getImages(completion: @escaping (Result<[Response.RandomImageModel.ImageModelElement], Error>) -> ()) {
+    func getImages(completion: @escaping (Result<[RandomImageModel.ImageModelElement], Error>) -> Void) {
         apiClient.sendRequest(to: .fetchRandomPhotos(count: 30)) { result in
             completion(.success(result))
         } failure: { error in
@@ -29,7 +29,7 @@ final class ImagesService: ImagesServiceProtocol {
     
     func searchResult(query: String,
                       page: String,
-                      completion: @escaping (Result<Response.SearchImageModel.SearchResults, Error>) -> ()) {
+                      completion: @escaping (Result<SearchImageModel.SearchResults, Error>) -> Void) {
         apiClient.sendRequest(to: .searchPhotos(query: query,
                                                 page: page,
                                                 perPage: String(30))) { result in

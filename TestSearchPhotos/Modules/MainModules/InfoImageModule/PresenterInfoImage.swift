@@ -5,54 +5,52 @@
 //  Created by Alex Balukhtsin on 8.06.22.
 //
 
+import RealmSwift
 import UIKit
 
-protocol PresenterInfoImageDelegate: AnyObject {
-    func presenterFavoriteImages(images: [Response.ViewModelImage])
-    func presenterSplashError(error: Error)
+protocol InfoImageProtocol: AnyObject {
+  func presentImage(image: DetailImageModel)
+  func getFavoriteImages(images: [DetailImageModel])
 }
 
-class PresenterInfoImage {
+protocol PresenterInfoImageProtocol: AnyObject {
+  func addImageInFavorite(image: DetailImageModel)
+  func removeImageForFavorite(image: DetailImageModel)
+  func showImage(image: DetailImageModel)
+  func loadDataArray()
+  
+  init(view: InfoImageProtocol,
+       favoriteImageService: FavoriteImageServiceProtocol)
+}
+
+class PresenterInfoImage: PresenterInfoImageProtocol {
+  
+  let favoriteImageService: FavoriteImageServiceProtocol
+  weak var view: InfoImageProtocol?
+  
+  required init(view: InfoImageProtocol,
+                favoriteImageService: FavoriteImageServiceProtocol ) {
+    self.view = view
+    self.favoriteImageService = favoriteImageService
     
-    weak private var delegate: PresenterInfoImageDelegate?
-    
-    private var unarchiver = NSKeyedUnarchiver.self
-    
-    func loadDataArray(completion: @escaping (Result<[Response.ViewModelImage], Error>) -> ()) {
-         guard
-             let objects = UserDefaults.standard.data(forKey: "FavoriteImagesArray")
-         else {
-             return
-         }
-         do {
-             guard let array = try unarchiver.unarchiveTopLevelObjectWithData(objects) as? [Response.ViewModelImage] else {
-                 fatalError("loadDataArray - Can't get Array")
-             }
-             completion(.success(array))
-         } catch {
-             fatalError("loadDataArray - Can't encode data: \(error)")
-         }
-     }
-//    private  func getRandomImages(completion: @escaping (Result<[Response.ImageModel.ImageModelElement], Error>) -> ()) {
-//        apiClient.sendRequest(to: .fetchRandomPhotos(count: 30)) { version in
-//            completion(.success(version))
-//        } failure: { error in
-//            completion(.failure(error))
-//        }
-//    }
-    
-    public func setViewDelegate(delegate: PresenterInfoImageDelegate) {
-        self.delegate = delegate
+    loadDataArray()
+  }
+  
+  func loadDataArray() {
+    favoriteImageService.loadDataArray { result in
+      self.view?.getFavoriteImages(images: result)
     }
-    
-    func showFavoritePhotos() {
-        loadDataArray { result in
-            switch result {
-            case .success(let success):
-                self.delegate?.presenterFavoriteImages(images: success)
-            case .failure(let error):
-                self.delegate?.presenterSplashError(error: error)
-            }
-        }
-   }
+  }
+  
+  func addImageInFavorite(image: DetailImageModel) {
+    favoriteImageService.saveFavoriteImage(image: image)
+  }
+  
+  func removeImageForFavorite(image: DetailImageModel) {
+    favoriteImageService.removeFavoriteImage(image: image)
+  }
+  
+  func showImage(image: DetailImageModel) {
+    self.view?.presentImage(image: image)
+  }
 }

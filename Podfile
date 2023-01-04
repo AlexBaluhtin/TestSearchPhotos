@@ -8,4 +8,5 @@ target 'TestSearchPhotos' do
   pod 'Moya', '~> 15.0'
   pod 'SDWebImage', '~> 5.0'
   pod 'SwiftLint'
+  pod 'RealmSwift', '~>10'
 end

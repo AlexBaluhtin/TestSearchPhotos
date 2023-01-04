@@ -3,7 +3,8 @@ This is a test task for the position of iOS developer
 
 ## About project:
 
-I had to make a screen with random photos from the internet. Photo description screen, where you can add to favorites or remove from favorites. And the screen of the list of favorite photos, from which it is also possible to go to the detailed description of the photo
+I had to make a screen with random photos from the internet. Photo description screen, where you can add to favorites or remove from favorites. And the screen of the list of favorite photos, from which it is also possible to go to the detailed description of the photo. 
+To keep the code clean, I used a framework SwiftLint
 
 ### API
 

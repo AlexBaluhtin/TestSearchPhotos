@@ -61,12 +61,12 @@ extension InfoImageViewController: InfoImageViewDelegate {
                                     createdImage: image.createdImage,
                                     downloadsCount: image.downloadsCount,
                                     isFavorite: true)
-
+    
     if favoriteImages.contains(where: { $0.id == newImage.id }) {
       let alert = UIAlertController(title: "Ошибка",
                                     message: "Такая картинка уже добавлена в избранное",
                                     preferredStyle: .alert)
-
+      
       let cancel = UIAlertAction(title: "Ok", style: .default, handler: nil)
       alert.addAction(cancel)
       present(alert, animated: true, completion: nil)

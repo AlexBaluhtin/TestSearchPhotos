@@ -8,10 +8,14 @@
 import RealmSwift
 
 protocol FavoriteImageServiceProtocol: AnyObject {
+  
+  /// Метод, который загружает из базы данных избранные фото
   func loadDataArray(completion: @escaping ([DetailImageModel]) -> Void)
   
+  /// Метод, который сохраняет в базу данных фото
   func saveFavoriteImage(image: DetailImageModel)
   
+  /// Метод, который удаляет фото из базы данных 
   func removeFavoriteImage(image: DetailImageModel)
 }
 
